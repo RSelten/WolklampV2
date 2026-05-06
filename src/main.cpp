@@ -569,6 +569,8 @@ void handle230VInput() {
         xSemaphoreGive(starrySkyStateMutex);
         xSemaphoreGive(rgbwStateMutex);
         send230VState();
+        sendRgbwState();
+        sendStarrySkyState();
       }
     }
   }
@@ -606,7 +608,7 @@ void updateRgbwStripState() {
       currentRgbwDisplayBrightness = (uint8_t)currentRgbwDisplayBrightnessFading;
   }
   
-  if (on_status) {
+  if (on_status || currentRgbwDisplayBrightness == 0) {
       currentRgbwDisplayColor = finalTargetColor; 
   }
 
@@ -654,6 +656,12 @@ void updateRgbwStripState() {
   }
   strip.Show();
 
+  TelnetStream.printf("RGBW Update - Target Brightness: %d, Display Brightness: %d, Target Color: (%d,%d,%d,%d), Display Color: (%d,%d,%d,%d), Interval: %d\r", 
+    finalTargetBrightness, currentRgbwDisplayBrightness, 
+    finalTargetColor.R, finalTargetColor.G, finalTargetColor.B, finalTargetColor.W,
+    appliedColor.R, appliedColor.G, appliedColor.B, appliedColor.W,
+    pixelInterval);
+    
   if (currentRgbwDisplayBrightness == finalTargetBrightness &&
       currentRgbwDisplayColor == finalTargetColor) {
       sendRgbwState();
